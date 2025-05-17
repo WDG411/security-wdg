@@ -3,7 +3,7 @@ package com.cgr.service.impl;
 import com.cgr.entity.LoginDTO;
 import com.cgr.entity.LoginVO;
 import com.cgr.entity.ResponseModel;
-import com.cgr.entity.User;
+import com.cgr.entity.SysUser;
 import com.cgr.mapper.UserMapper;
 import com.cgr.service.LoginService;
 import com.cgr.utils.JwtUtil;
@@ -35,6 +35,9 @@ public class LoginServiceImpl implements LoginService {
         String username = loginDTO.getUsername();
         String password = loginDTO.getPassword();
 
+        SysUser user = new SysUser();
+        String token = "";
+
         //封装到待认证的 Authentication 对象中
         UsernamePasswordAuthenticationToken unauthenticated = UsernamePasswordAuthenticationToken.unauthenticated(username, password);
 
@@ -44,25 +47,27 @@ public class LoginServiceImpl implements LoginService {
             if (authentication.isAuthenticated()) {
                 //获取认证后的用户信息
                 MyUserDetails principal = (MyUserDetails) authentication.getPrincipal();
-                User user = principal.getUser();
+                user = principal.getUser();
 
                 //认证成功
                 //存入安全上下文
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 //生成token
                 Map<String, Object> claims = new HashMap<>();
-                String token =JwtUtil.generateToken(claims);
+                claims.put("id",user.getId());
+                token =JwtUtil.generateToken(claims);
 
                 //写入redis
-                redisTemplate.opsForValue().set(token,principal,1000*60*5, TimeUnit.MILLISECONDS);
+                String jwtKey = "user:" + user.getId();
+                redisTemplate.opsForValue().set(jwtKey,authentication.getPrincipal(),1000*60*5, TimeUnit.MILLISECONDS);
 
-                return ResponseModel.success(new LoginVO(user.getUsername(), user.getEmail(),token));
+
             }
         } catch (AuthenticationException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace(); // 打印到控制台
+            return ResponseModel.error(e.getMessage());
         }
-
-        //认证失败
-        return ResponseModel.error("认证失败");
+        //认证成功
+        return ResponseModel.success(new LoginVO(user.getUsername(), user.getEmail(),token));
     }
 }

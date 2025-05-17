@@ -1,6 +1,7 @@
 package com.cgr.service.impl;
 
-import com.cgr.entity.User;
+import com.cgr.entity.SysUser;
+import com.cgr.mapper.AuthorityMapper;
 import com.cgr.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,19 +9,26 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class UserDetailsManagerImpl implements UserDetailsManager {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private AuthorityMapper authorityMapper;
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userMapper.selectByUsername(username);
+        SysUser user = userMapper.selectByUsername(username);
         if (user == null) {
-            throw new UsernameNotFoundException("用户不存在：" + username);
+            throw new UsernameNotFoundException(username + "不存在" );
         }
+        Long userId = user.getId();
+        List<String> authorityList = authorityMapper.selectByUserId(userId);
 
-        return new MyUserDetails(user);
+        return new MyUserDetails(user,authorityList);
     }
 
 

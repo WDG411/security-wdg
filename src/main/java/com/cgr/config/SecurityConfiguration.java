@@ -1,5 +1,6 @@
 package com.cgr.config;
 
+import com.cgr.filter.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,8 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
 @Configuration
 @EnableMethodSecurity
@@ -27,10 +27,13 @@ public class SecurityConfiguration {
     private AuthenticationEntryPoint  authenticationEntryPoint;
 
     @Autowired
+    private JwtAuthenticationFilter  jwtAuthenticationFilter;
+
+/*    @Autowired
     private AuthenticationSuccessHandler successHandler;
 
     @Autowired
-    private AuthenticationFailureHandler failureHandler;
+    private AuthenticationFailureHandler failureHandler;*/
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -48,7 +51,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login").permitAll()
@@ -57,7 +60,10 @@ public class SecurityConfiguration {
                     exception.authenticationEntryPoint(authenticationEntryPoint);
                 })
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.disable());
+                .sessionManagement(session -> session.disable())
+                .logout(logout -> logout.disable())
+                .formLogin(form -> form.disable())
+                .addFilterBefore(jwtAuthenticationFilter, AuthorizationFilter.class);
 
         return http.build();
     }

@@ -1,9 +1,13 @@
 package com.cgr.service.impl;
 
-import com.cgr.entity.User;
+import com.cgr.entity.SysUser;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -11,17 +15,19 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MyUserDetails implements UserDetails {
 
-    private User user;
+    private SysUser user;
 
-    public MyUserDetails(User user) {
-        this.user = user;
-    }
+    private List<String> authorityList;
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        List<SimpleGrantedAuthority> list = authorityList.stream().map(SimpleGrantedAuthority::new).toList();
+        return list;
     }
 
     @Override
