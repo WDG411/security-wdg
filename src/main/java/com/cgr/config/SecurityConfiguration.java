@@ -6,17 +6,31 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.UserDetailsManager;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfiguration {
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    private UserDetailsManager userDetailsManager;
+
+    @Autowired
+    private AuthenticationEntryPoint  authenticationEntryPoint;
+
+    @Autowired
+    private AuthenticationSuccessHandler successHandler;
+
+    @Autowired
+    private AuthenticationFailureHandler failureHandler;
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -28,20 +42,23 @@ public class SecurityConfiguration {
         DaoAuthenticationProvider  provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(passwordEncoder());
         //配置基于数据库认证的UserDetailsService对象
-        provider.setUserDetailsService(userDetailsService);
+        provider.setUserDetailsService(userDetailsManager);
         //创建并返回认证管理器对象
         return new ProviderManager(provider);
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login").permitAll()
                         .anyRequest().authenticated())
+                .exceptionHandling(exception ->{
+                    exception.authenticationEntryPoint(authenticationEntryPoint);
+                })
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.disable());
 
-                .csrf(csrf-> csrf.disable());
-
-                return http.build();
+        return http.build();
     }
 }
