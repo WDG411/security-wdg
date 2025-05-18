@@ -1,7 +1,7 @@
 package com.cgr.service.impl;
 
-import com.cgr.entity.LoginDTO;
-import com.cgr.entity.LoginVO;
+import com.cgr.entity.DTO.LoginDTO;
+import com.cgr.entity.VO.LoginVO;
 import com.cgr.entity.ResponseModel;
 import com.cgr.entity.SysUser;
 import com.cgr.mapper.UserMapper;
@@ -59,7 +59,7 @@ public class LoginServiceImpl implements LoginService {
 
                 //写入redis
                 String jwtKey = "user:" + user.getId();
-                redisTemplate.opsForValue().set(jwtKey,authentication.getPrincipal(),1000*60*5, TimeUnit.MILLISECONDS);
+                redisTemplate.opsForValue().set(jwtKey,principal,1000*60*5, TimeUnit.MILLISECONDS);
 
 
             }

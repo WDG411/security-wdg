@@ -1,6 +1,8 @@
 package com.cgr.filter;
 
 import com.cgr.utils.JwtUtil;
+import com.cgr.service.impl.MyUserDetails;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -11,7 +13,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -50,9 +51,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         //从 redis 中获取用户信息
-        Object o = redisTemplate.opsForValue().get(jwtKey);
-        UserDetails userDetails = (UserDetails) o;
-        System.out.println("赶紧给我看这里\n" + userDetails);
+        //MyUserDetails userDetails =(MyUserDetails)redisTemplate.opsForValue().get(jwtKey);
+
+        MyUserDetails userDetails = (MyUserDetails)redisTemplate.opsForValue().get(jwtKey);
+        //MyUserDetails userDetails = new ObjectMapper().convertValue(o, MyUserDetails.class);
 
         if(userDetails == null){
             throw new BadCredentialsException("redis错误");

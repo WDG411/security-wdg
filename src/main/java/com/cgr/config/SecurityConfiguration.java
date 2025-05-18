@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
 @Configuration
@@ -29,11 +30,8 @@ public class SecurityConfiguration {
     @Autowired
     private JwtAuthenticationFilter  jwtAuthenticationFilter;
 
-/*    @Autowired
-    private AuthenticationSuccessHandler successHandler;
-
     @Autowired
-    private AuthenticationFailureHandler failureHandler;*/
+    private AccessDeniedHandler accessDeniedHandler;
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -51,13 +49,14 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(exception ->{
-                    exception.authenticationEntryPoint(authenticationEntryPoint);
+                    exception.authenticationEntryPoint(authenticationEntryPoint)
+                            .accessDeniedHandler(accessDeniedHandler);
                 })
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.disable())

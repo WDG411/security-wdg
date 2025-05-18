@@ -4,6 +4,12 @@
 <mapper namespace="com.cgr.mapper.UserMapper">
 
 
+    <insert id="insert" parameterType="com.cgr.entity.SysUser" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_user
+        (username,password,email) VALUES (#{username},#{password},#{email})
+    </insert>
+
+
     <select id="selectByUsername" resultType="com.cgr.entity.SysUser">
         select * from sys_user where username = #{username}
     </select>

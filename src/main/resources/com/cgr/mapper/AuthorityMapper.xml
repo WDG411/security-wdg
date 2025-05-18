@@ -3,12 +3,44 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cgr.mapper.AuthorityMapper">
 
+    <insert id="insertBatch">
+        insert into sys_user_role(user_id,role_id,assigned_at)
+        values
+            <foreach collection="roleIds" item="roleId" separator=",">
+                (#{id},#{roleId},#{now})
+            </foreach>
+    </insert>
 
-    <select id="selectByUserId" resultType="java.lang.String">
+
+    <select id="selectauthorityByUserId" resultType="java.lang.String">
         SELECT p.perm_name
         FROM sys_permission p
                  JOIN sys_role_permission rp ON p.id = rp.perm_id
                  JOIN sys_user_role ur ON rp.role_id = ur.role_id
         WHERE ur.user_id = #{userId}
+    </select>
+
+
+    <select id="selectByroleName" resultType="java.lang.String">
+        select perm_name from sys_permission p
+                join sys_role_permission rp on p.id = rp.perm_id
+                join sys_role r on rp.role_id = r.id
+        where r.role_name = #{roleName}
+    </select>
+
+
+    <select id="selectRoleIdsByName" resultType="java.lang.Integer">
+        SELECT id FROM sys_role
+        WHERE role_name IN
+        <foreach collection="roleList" item="roleName" open="(" separator="," close=")">
+            #{roleName}
+        </foreach>
+    </select>
+
+
+    <select id="selectroleByUserId" resultType="java.lang.String">
+        select role_name from sys_role r
+                join sys_user_role ur on r.id = ur.role_id
+        where ur.user_id = #{userId}
     </select>
 </mapper>

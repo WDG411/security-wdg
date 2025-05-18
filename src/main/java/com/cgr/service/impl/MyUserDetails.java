@@ -3,9 +3,6 @@ package com.cgr.service.impl;
 import com.cgr.entity.SysUser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,13 +10,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MyUserDetails implements UserDetails {
 
+
     private SysUser user;
+
+    private List<String> roleList;
 
     private List<String> authorityList;
 
@@ -30,12 +28,46 @@ public class MyUserDetails implements UserDetails {
         return list;
     }
 
+    public MyUserDetails(SysUser user, List<String> roleList, List<String> authorityList) {
+        this.user = user;
+        this.roleList = roleList;
+        this.authorityList = authorityList;
+    }
+
+    public MyUserDetails() {
+    }
+
+    public List<String> getAuthorityList() {
+        return authorityList;
+    }
+
+    public void setAuthorityList(List<String> authorityList) {
+        this.authorityList = authorityList;
+    }
+
+    public void setRoleList(List<String> roleList) {
+        this.roleList = roleList;
+    }
+
+    public List<String> getRoleList() {
+        return roleList;
+    }
+
+
+
+    /**
+     * 防止redis中存入两份username，以及密码不显示
+     * @return
+     */
+
     @Override
+    @JsonIgnore
     public String getPassword() {
         return user.getPassword();
     }
 
     @Override
+    @JsonIgnore
     public String getUsername() {
         return user.getUsername();
     }
@@ -59,4 +91,13 @@ public class MyUserDetails implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public SysUser getUser() {
+        return user;
+    }
+
+    public void setUser(SysUser user) {
+        this.user = user;
+    }
+
 }

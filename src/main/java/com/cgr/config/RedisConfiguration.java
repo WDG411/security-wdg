@@ -26,6 +26,8 @@ public class RedisConfiguration {
         // hashValue采用 Jackson2JsonRedisSerializer 类序列化
         redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
 
+        redisTemplate.afterPropertiesSet();
+
         return redisTemplate;
     }
 }

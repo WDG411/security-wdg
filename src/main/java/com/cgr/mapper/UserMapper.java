@@ -7,4 +7,6 @@ import org.apache.ibatis.annotations.Mapper;
 public interface UserMapper {
 
     SysUser selectByUsername(String username);
+
+    void insert(SysUser user);
 }
