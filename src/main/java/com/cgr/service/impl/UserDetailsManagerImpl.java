@@ -2,6 +2,7 @@ package com.cgr.service.impl;
 
 import com.cgr.entity.SysUser;
 import com.cgr.mapper.AuthorityMapper;
+import com.cgr.mapper.RoleMapper;
 import com.cgr.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,6 +26,9 @@ public class UserDetailsManagerImpl implements UserDetailsManager {
     @Autowired
     private AuthorityMapper authorityMapper;
 
+    @Autowired
+    private RoleMapper roleMapper;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         SysUser user = userMapper.selectByUsername(username);
@@ -32,8 +36,8 @@ public class UserDetailsManagerImpl implements UserDetailsManager {
             throw new UsernameNotFoundException(username + "不存在" );
         }
         Long userId = user.getId();
-        List<String> roleList = authorityMapper.selectroleByUserId(userId);
-        List<String> authorityList = authorityMapper.selectauthorityByUserId(userId);
+        List<String> roleList = roleMapper.selectRoleByUserId(userId);
+        List<String> authorityList = authorityMapper.selectAuthorityByUserId(userId);
 
         return new MyUserDetails(user,roleList,authorityList);
     }
@@ -52,7 +56,7 @@ public class UserDetailsManagerImpl implements UserDetailsManager {
         if(roleList ==  null || roleList.isEmpty()){
             roleList = List.of(ROLE_USER.getRoleName());
         }
-        List<Integer> roleIds = authorityMapper.selectRoleIdsByName(roleList);
+        List<Integer> roleIds = roleMapper.selectRoleIdsByName(roleList);
 
         authorityMapper.insertBatch(id,roleIds, LocalDateTime.now());
 

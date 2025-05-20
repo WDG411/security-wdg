@@ -7,7 +7,7 @@ import java.util.List;
 
 @Mapper
 public interface AuthorityMapper {
-    List<String> selectauthorityByUserId(Long userId);
+    List<String> selectAuthorityByUserId(Long userId);
 
     String selectByroleName(String roleName);
 
@@ -19,7 +19,4 @@ public interface AuthorityMapper {
      */
     void insertBatch(Long id, List<Integer> roleIds, LocalDateTime now);
 
-    List<Integer> selectRoleIdsByName(List<String> roleList);
-
-    List<String> selectroleByUserId(Long userId);
 }

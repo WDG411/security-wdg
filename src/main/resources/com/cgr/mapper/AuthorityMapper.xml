@@ -12,7 +12,7 @@
     </insert>
 
 
-    <select id="selectauthorityByUserId" resultType="java.lang.String">
+    <select id="selectAuthorityByUserId" resultType="java.lang.String">
         SELECT p.perm_name
         FROM sys_permission p
                  JOIN sys_role_permission rp ON p.id = rp.perm_id
@@ -29,18 +29,8 @@
     </select>
 
 
-    <select id="selectRoleIdsByName" resultType="java.lang.Integer">
-        SELECT id FROM sys_role
-        WHERE role_name IN
-        <foreach collection="roleList" item="roleName" open="(" separator="," close=")">
-            #{roleName}
-        </foreach>
-    </select>
 
 
-    <select id="selectroleByUserId" resultType="java.lang.String">
-        select role_name from sys_role r
-                join sys_user_role ur on r.id = ur.role_id
-        where ur.user_id = #{userId}
-    </select>
+
+
 </mapper>
