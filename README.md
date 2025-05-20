@@ -91,15 +91,17 @@
 
 ## 📂 项目结构概览
 
-security-wdg/
-├── config/ # Security 配置类
-├── controller/ # 控制器层
-├── domain/ # 实体类、DTO、VO
-├── filter/ # 自定义 JWT 过滤器
-├── handler/ # 自定义认证/授权异常处理器
-├── mapper/ # MyBatis Mapper 接口
-├── service/ # 业务逻辑接口与实现
-├── util/ # 工具类（如 JwtUtil）
-├── resources/
-│ ├── mapper/ # MyBatis XML 映射文件
-│ └── application.yml # 配置文件
+security-wdg/<br>
+├── config/ # Security 安全配置类<br>
+├── controller/ # 控制器层<br>
+├── filter/ # 自定义过滤器<br>
+├── handler/ # 自定义认证、授权失败处理器<br>
+├── mapper/ # MyBatis Mapper 接口<br>
+├── service/<br>
+│ ├── impl/ # 业务逻辑实现类<br>
+│ └── interface/ # 业务接口<br>
+├── util/ # 工具类<br>
+├── resources/<br>
+│ ├── mapper/ # MyBatis XML 映射文件<br>
+│ └── application.yml # Spring Boot 配置文件<br>
+├── SecurityWdgApplication.java # 启动类<br>
