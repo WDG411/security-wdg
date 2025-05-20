@@ -1,8 +1,7 @@
 package com.cgr.filter;
 
-import com.cgr.utils.JwtUtil;
 import com.cgr.service.impl.MyUserDetails;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.cgr.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -13,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -24,6 +24,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    private UserDetailsManager userDetailsManager;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -41,9 +44,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String jwtKey = "user:";
+        Claims  claims;
         //取得token中的用户标识（注意解析的异常处理）
         try{
-            Claims  claims = JwtUtil.parseToken(token);
+            claims = JwtUtil.parseToken(token);
             Integer id = claims.get("id", Integer.class);
             jwtKey = jwtKey + id;
         }catch (Exception e){
@@ -57,7 +61,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         //MyUserDetails userDetails = new ObjectMapper().convertValue(o, MyUserDetails.class);
 
         if(userDetails == null){
-            throw new BadCredentialsException("redis错误");
+            //redis数据过期，从数据库从重新获取信息
+            String username = claims.get("username", String.class);
+            userDetails = (MyUserDetails) userDetailsManager.loadUserByUsername(username);
+            //throw new BadCredentialsException("redis错误");
         }
 
         //将用户信息存入安全上下文

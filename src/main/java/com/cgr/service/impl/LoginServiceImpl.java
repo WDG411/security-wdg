@@ -55,11 +55,12 @@ public class LoginServiceImpl implements LoginService {
                 //生成token
                 Map<String, Object> claims = new HashMap<>();
                 claims.put("id",user.getId());
+                claims.put("username",user.getUsername());
                 token =JwtUtil.generateToken(claims);
 
                 //写入redis
                 String jwtKey = "user:" + user.getId();
-                redisTemplate.opsForValue().set(jwtKey,principal,1000*60*5, TimeUnit.MILLISECONDS);
+                redisTemplate.opsForValue().set(jwtKey,principal,1000*60*60, TimeUnit.MILLISECONDS);
 
 
             }
