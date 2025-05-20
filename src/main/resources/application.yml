@@ -1,5 +1,38 @@
 
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            clientId: 887175735200-go860cbog87l6srsv8slkm8luo1snf2r.apps.googleusercontent.com
+            clientSecret: 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
+          gitee:
+            # 在 gitee 上注册后分配的 应用 id
+            clientId: 62bed988d5f770f5ae34312ded1605e0f60ca5ac0f259af2e9fd77034f6827b0
+            # 在 gitee 上注册后分配的 应用密钥
+            clientSecret: ace7e55f4f80b3ad654ecd5871968b8325c8c3becc0aa39477c24e97d5ff1223
+            # 授权模式为  授权码
+            authorizationGrantType: authorization_code
+            # 回调地址 (必须与gitee站点配置的一致)
+            redirectUri: http://localhost:8080/login/oauth2/code/gitee
+            #  授权范围
+            scope:
+              - user_info
+              - emails
+            # 应用的 provider名字
+            provider: gitee
+        provider:
+          gitee:
+            # 在 gitee 上进行认证的地址
+            authorizationUri: https://gitee.com/oauth/authorize
+            # 获取 access_token 的地址
+            tokenUri: https://gitee.com/oauth/token
+            # 获取用户信息的地址
+            userInfoUri: https://gitee.com/api/v5/user
+            # 获取用户 "XXX" 属性的值
+            userNameAttribute: login
+
   data:
     redis:
       host: 127.0.0.1

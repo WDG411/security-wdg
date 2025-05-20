@@ -22,6 +22,16 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+
+        <!--<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>-->
+
         <!-- Spring Web 模块的启动器，用于构建 RESTful API 和处理 HTTP 请求 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
