@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -54,34 +55,26 @@ public class SecurityConfiguration {
                 // 1. 授权规则：放行登录页和 OAuth2 回调端点，其他都要认证
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login").permitAll()
+                        .requestMatchers("/users/save").permitAll()
                         .anyRequest().authenticated())
                 // 2. 异常处理
                 .exceptionHandling(exception ->{
                     exception.authenticationEntryPoint(authenticationEntryPoint)
                             .accessDeniedHandler(accessDeniedHandler);
                 })
+                //开启OAuth2 登录
+                .oauth2Login(Customizer.withDefaults())
                 // 3. 关闭 CSRF（如果前后端分离且用 Token，可关闭）
                 .csrf(csrf -> csrf.disable())
                 // 4. 无状态会话（如果用 JWT，可禁用 session）
                 //.sessionManagement(session -> session.disable())
-                // 5. 启用 OAuth2 登录，使用默认登录页（会自动生成一个“选择提供商”的页面）
+                // 5. 禁用不需要的过滤器
                 //.oauth2Login(Customizer.withDefaults())
-                // 6. 禁用不需要的过滤器
                 .formLogin(form -> form.disable())
                 .logout(logout -> logout.disable())
                 .addFilterBefore(jwtAuthenticationFilter, AuthorizationFilter.class);
 
         return http.build();
     }
-
-    //    —— 如果你有自定义的 /login 页面，用下面这一段替换上面那行：
-    // .oauth2Login(oauth -> oauth
-    //     .loginPage("/login")                  // 自定义登录入口
-    //     .defaultSuccessUrl("/", true)         // 成功后跳转
-    //     .failureUrl("/login?error")           // 失败跳转
-    //     .userInfoEndpoint(userInfo -> userInfo
-    //         .userService(customOAuth2UserService())
-    //     )
-    // )
 
 }
