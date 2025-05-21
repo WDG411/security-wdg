@@ -62,7 +62,6 @@ public class LoginServiceImpl implements LoginService {
                 String jwtKey = "user:" + user.getId();
                 redisTemplate.opsForValue().set(jwtKey,principal,1000*60*60, TimeUnit.MILLISECONDS);
 
-
             }
         } catch (AuthenticationException e) {
             e.printStackTrace(); // 打印到控制台
