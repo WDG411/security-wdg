@@ -1,13 +1,13 @@
 package com.cgr.config;
 
 import com.cgr.filter.JwtAuthenticationFilter;
+import com.cgr.handler.OAuth2LoginSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -33,6 +33,10 @@ public class SecurityConfiguration {
 
     @Autowired
     private AccessDeniedHandler accessDeniedHandler;
+
+    @Autowired
+    private OAuth2LoginSuccessHandler AuthenticationSuccessHandler;
+
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -55,7 +59,9 @@ public class SecurityConfiguration {
                 // 1. 授权规则：放行登录页和 OAuth2 回调端点，其他都要认证
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login").permitAll()
-                        .requestMatchers("/users/save").permitAll()
+                        .requestMatchers("/register").permitAll()
+                        //访问不存在的资源放行，让MVC抛出 404
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
                 // 2. 异常处理
                 .exceptionHandling(exception ->{
@@ -63,13 +69,12 @@ public class SecurityConfiguration {
                             .accessDeniedHandler(accessDeniedHandler);
                 })
                 //开启OAuth2 登录
-                .oauth2Login(Customizer.withDefaults())
+                // 3. 启用 OAuth2 登录（使用默认设置即可）
+                .oauth2Login(auth -> auth.successHandler(AuthenticationSuccessHandler))
                 // 3. 关闭 CSRF（如果前后端分离且用 Token，可关闭）
                 .csrf(csrf -> csrf.disable())
-                // 4. 无状态会话（如果用 JWT，可禁用 session）
+                // 4. 无状态会话（如果用 JWT，可禁用 ,session,OAuth登录会用到session）
                 //.sessionManagement(session -> session.disable())
-                // 5. 禁用不需要的过滤器
-                //.oauth2Login(Customizer.withDefaults())
                 .formLogin(form -> form.disable())
                 .logout(logout -> logout.disable())
                 .addFilterBefore(jwtAuthenticationFilter, AuthorizationFilter.class);
