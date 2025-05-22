@@ -3,15 +3,6 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cgr.mapper.AuthorityMapper">
 
-    <insert id="insertBatch">
-        insert into sys_user_role(user_id,role_id,assigned_at)
-        values
-            <foreach collection="roleIds" item="roleId" separator=",">
-                (#{id},#{roleId},#{now})
-            </foreach>
-    </insert>
-
-
     <select id="selectAuthorityByUserId" resultType="java.lang.String">
         SELECT p.perm_name
         FROM sys_permission p
