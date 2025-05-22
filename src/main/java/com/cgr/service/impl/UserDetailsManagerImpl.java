@@ -3,9 +3,7 @@ package com.cgr.service.impl;
 import com.cgr.entity.ResponseModel;
 import com.cgr.entity.SysUser;
 import com.cgr.entity.VO.LoginVO;
-import com.cgr.mapper.AuthorityMapper;
-import com.cgr.mapper.RoleMapper;
-import com.cgr.mapper.UserMapper;
+import com.cgr.mapper.*;
 import com.cgr.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -22,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,13 +33,14 @@ public class UserDetailsManagerImpl implements UserDetailsManager {
 
     @Autowired
     private UserMapper userMapper;
-
     @Autowired
     private AuthorityMapper authorityMapper;
-
     @Autowired
     private RoleMapper roleMapper;
-
+    @Autowired
+    private UserRoleMapper userRoleMapper;
+    @Autowired
+    private RoleAuthorityMapper roleAuthorityMapper;
     @Autowired
     private RedisTemplate redisTemplate;
 
@@ -48,72 +48,59 @@ public class UserDetailsManagerImpl implements UserDetailsManager {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         SysUser user = userMapper.selectByUsername(username);
         if (user == null) {
-            throw new UsernameNotFoundException(username + "不存在" );
+            throw new UsernameNotFoundException(username + "不存在");
         }
         Long userId = user.getId();
         List<String> roleList = roleMapper.selectRoleByUserId(userId);
         List<String> authorityList = authorityMapper.selectAuthorityByUserId(userId);
 
-        return new MyUserDetails(user,roleList,authorityList);
+        return new MyUserDetails(user, roleList, authorityList);
     }
 
 
     @Transactional(rollbackFor = Exception.class)
-    public ResponseModel createUser(MyUserDetails user) {
+    public ResponseModel createUser(SysUser user) throws DuplicateKeyException, AuthenticationException {
 
-        SysUser newUser = user.getUser();
-        newUser.setPassword(new BCryptPasswordEncoder().encode(newUser.getPassword()));
-        try {
-            userMapper.insert(newUser);
-        } catch (DuplicateKeyException e) {
-            e.printStackTrace();
-            return ResponseModel.error("用户名已存在");
-        }
+        user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
 
-        Long id = newUser.getId();
-        List<String> roleList = user.getRoleList();
-
-        if(roleList ==  null || roleList.isEmpty()){
-            roleList = List.of(ROLE_USER.getRoleName());
-        }
-        List<Integer> roleIds = roleMapper.selectRoleIdsByName(roleList);
-
-        authorityMapper.insertBatch(id,roleIds, LocalDateTime.now());
-
-        user.setAuthorityList(authorityMapper.selectAuthorityByUserId(id));
-        user.setRoleList(roleList);
-
-        String token="";
-
-        try {
-            Authentication authentication =
-                    UsernamePasswordAuthenticationToken.authenticated(
-                            user,
-                            null,
-                            user.getAuthorities()
-                    );
-            if(authentication.isAuthenticated()){
-                //存入安全上下文
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                //生成token
-                Map<String,Object> claims = new HashMap<>();
-                claims.put("id",id);
-                claims.put("username",newUser.getUsername());
-                token = JwtUtil.generateToken(claims);
-
-                //存入redis
-                String jwtKey = "user:" + id;
-                redisTemplate.opsForValue().set(jwtKey,user,60, TimeUnit.MINUTES);
-
-            }
-        } catch (AuthenticationException e) {
-            e.printStackTrace();
-            ResponseModel.error("注册失败");
-        }
+        userMapper.insert(user);
 
 
+        Long id = user.getId();
+        List<Integer> roleIds = new ArrayList<>();
+        roleIds.add(ROLE_USER.getId());
 
-        return ResponseModel.success(new LoginVO(newUser.getUsername(), newUser.getEmail(),token));
+        userRoleMapper.insertBatch(id, roleIds, LocalDateTime.now());
+
+        List<String> roleList = new ArrayList<>();
+        roleList.add(ROLE_USER.getRoleName());
+
+        List<String> authorityList = authorityMapper.selectAuthorityByUserId(id);
+
+        MyUserDetails userDetails = new MyUserDetails(user, roleList, authorityList);
+
+
+        Authentication authentication =
+                UsernamePasswordAuthenticationToken.authenticated(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+
+        //存入安全上下文
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        //生成token
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("id", id);
+        claims.put("username", userDetails.getUsername());
+        String token = JwtUtil.generateToken(claims);
+
+        //存入redis
+        String jwtKey = "user:" + id;
+        redisTemplate.opsForValue().set(jwtKey, user, 60, TimeUnit.MINUTES);
+
+
+        return ResponseModel.success(new LoginVO(userDetails.getUsername(), userDetails.getUser().getEmail(), token));
 
     }
 
