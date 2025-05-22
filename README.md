@@ -24,6 +24,7 @@
 - 用户管理接口（注册、保存）
 - 使用 `UserDetailsManager` 接口自定义用户管理逻辑
 - 基于 Spring Security 过滤器链实现请求拦截与权限控制
+- 实现OAuth2.0 登录
 
 ---
 
