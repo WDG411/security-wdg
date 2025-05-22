@@ -1,32 +1,21 @@
 package com.cgr.entity.DTO;
 
-import java.util.List;
-
 public class UserDTO {
     private Long id;
     private String username;
     private String password;
     private String email;
-    private List<String> roleList;
+
 
     public UserDTO() {
     }
 
 
-    public List<String> getRoleList() {
-        return roleList;
-    }
-
-    public void setRoleList(List<String> roleList) {
-        this.roleList = roleList;
-    }
-
-    public UserDTO(Long id, String username, String password, String email, List<String> roleList) {
+    public UserDTO(Long id, String username, String password, String email) {
         this.id = id;
         this.username = username;
         this.password = password;
         this.email = email;
-        this.roleList = roleList;
     }
 
     public Long getId() {
