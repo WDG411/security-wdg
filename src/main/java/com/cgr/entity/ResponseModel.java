@@ -30,6 +30,11 @@ public class ResponseModel<T> {
         return new ResponseModel<T>(401, "error", data);
     }
 
+
+    public static ResponseModel<String> authenticatedError(String msg) {
+        return new ResponseModel(402, msg, "好烦啊");
+    }
+
     public int getCode() {
         return code;
     }
